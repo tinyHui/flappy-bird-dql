@@ -1,0 +1,5 @@
+env/
+logs_bird/
+assets/
+saved_networks/
+.idea/
