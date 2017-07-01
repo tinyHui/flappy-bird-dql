@@ -1,4 +1,5 @@
 from collections import deque
+from random import sample
 
 import numpy as np
 
@@ -10,7 +11,8 @@ class Memory:
         self.memory_size = memory_size
         self.item_count = 0
         self.memory = deque()
-        self.current_stack = np.zeros((2, 2, 4))
+        self.frame_per_stack = frame_per_stack
+        self.current_stack = np.zeros((2, 2, frame_per_stack))
 
     def remember(self, prev_state, action, reward, new_state, game_end):
         self.memory.append((prev_state, action, reward, new_state, game_end))
@@ -22,12 +24,25 @@ class Memory:
 
     def initial_stack(self, image_data):
         frame = normalize(image_data)
-        self.current_stack = np.stack((frame, frame, frame, frame), axis=2)
+        frame = np.expand_dims(frame, axis=3)
+        self.current_stack = np.repeat(frame, self.frame_per_stack, axis=2)
 
     def stack_frame(self, image_data):
         frame = normalize(image_data)
         frame = np.expand_dims(frame, axis=3)
-        self.current_stack = np.append(frame, self.current_stack[:, :, :3], axis=2)
+        self.current_stack = np.append(frame, self.current_stack[:, :, :self.frame_per_stack - 1], axis=2)
 
     def get_current_stack(self):
         return self.current_stack
+
+    def get_sample_batches(self, batch_size):
+        mini_batch = sample(self.memory, batch_size)
+
+        prev_state_batch = [s[0] for s in mini_batch]
+        action_batch = [s[1] for s in mini_batch]
+        reward_batch = [s[2] for s in mini_batch]
+        new_state_batch = [s[3] for s in mini_batch]
+        game_terminate_batch = [s[4] for s in mini_batch]
+
+        return prev_state_batch, action_batch, reward_batch, new_state_batch, game_terminate_batch
+
