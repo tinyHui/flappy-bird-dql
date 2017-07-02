@@ -120,7 +120,7 @@ class GameState:
             #SOUNDS['die'].play()
             terminal = True
             self.__init__()
-            reward = -1
+            reward = -10
 
         # draw sprites
         SCREEN.blit(IMAGES['background'], (0,0))
